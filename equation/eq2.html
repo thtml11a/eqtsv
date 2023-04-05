@@ -1,0 +1,90 @@
+Equation: <textarea id="eq">x**3 - 5</textarea><br>
+Difference: <input value="0.0000001" type="number" id="dx"><br>
+Respected variable: <input value="x" id="rs"><br>
+Initial Guess: <input type="number" value="0" id="n1"> + i<input type="number" value="0" id="n2"><br>
+Root: <textarea readonly id="rt"></textarea><br>
+<button onclick="start()">Start</button>
+<script>
+const ev=s=>{
+ try{
+  return {res:eval(s)}
+ }catch(e){
+  return e
+ }
+}
+</script>
+<script>
+const {sqrt,sin,cos,PI,atan,abs,E,log}=Math
+const nFix=(n,k=10000)=>Math.round(n*k)/k
+const diff = (f, a, dx=0.00001) => (f(a+dx)-f(a-dx))/(2*dx);
+const Arg=(x,y)=>{
+ if(x==0)return PI/2*(y>0?1:3)
+ if(y==0)return PI*(x>0?0:1)
+ const a =atan(abs(y/x))
+ if(x>0){
+  if(y>0) return a //++
+  else return -a//+-
+ } else {
+  if(y>0) return -a//-+
+  else return a//--
+ }
+};
+const add=(a,b,c,d)=>[a+c,b+d]
+const sub=(a,b,c,d)=>[a-c,b-d]
+const mul=(a,b,c,d)=>[a*c-b*d,a*d+b*c]
+const div=(a,b,c,d)=>{
+ const mag=sqrt(a**2+b**2)/sqrt(c**2+d**2)
+ const rad=Arg(a,b)-Arg(c,d)
+ return [cos(rad)*mag,sin(rad)*mag]
+}
+const pow=(a,b,c,d)=>{
+ const r=sqrt(a**2+b**2)
+ const alpha=Arg(a,b)
+ const mag=r**c*E**(-d*alpha)
+ const rad = c*alpha+d*log(r)
+ return [cos(rad)*mag,sin(rad)*mag]
+}
+window.start=()=>{
+ const resp=document.querySelector("#rs").value
+ if(!resp||!isNaN(resp[0]*1))return alert("Invalid variable.")
+ let eq = ev("x=>"+document.querySelector("#eq").value)
+ if(eq instanceof Error)return alert(eq.toString())
+ equation=equation.res
+ const initial=[document.querySelector("#n1").value*1,document.querySelector("#n2").value*1]
+ if(isNaN(initial[0]))return alert("Initial guess's real part should be a floating number.")
+ if(isNaN(initial[1]))return alert("Initial guess's imaginary part should be a floating number.")
+ const dx=document.querySelector("#dx").value*1
+ if(isNaN(dx))return alert("Difference has to be a floating number.")
+ let cX=[initial[0],initial[1]]
+ let fr=
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

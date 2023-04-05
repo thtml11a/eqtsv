@@ -1,7 +1,38 @@
-Equation: <textarea class="a"></textarea><br>
-Differentiated Equation: <textarea class="b"></textarea><br>
+<div class="container">
+Calculator: <textarea class="a"></textarea><br>
+Ans: <span class="aA"></span><br>
+<br>Equation: <textarea class="b"></textarea><br><br><br>
+Differentiated Equation: <textarea class="c"></textarea><br><br><br>
+Iterations(<span class="pP"></span>): <input class="p" type="range" min="1" max="1000000"><br>
+Ans: <span class="bB"></span>
+</div>
 <script>
-const a = document.querySelector(".a");
-const b = document.querySelector(".b");
-
+const e = {};
+["a","b","c","aA","bB","p","pP"].forEach(i=>e[i]=document.querySelector("."+i));
+const newton = (f,df,x0,it)=>{for(let i=0;i<it;i++)x0-=f(x0)/(df(x0)||0.0000001);return x0};
+const old = {};
+setInterval(()=>{
+ if(old.a!==e.a.value){
+  old.a=e.a.value;
+  try{e.aA.innerHTML=eval(old.a)}catch(e){e.aA.innerHTML="Error"}
+ }
+ if(old.b!==e.b.value||old.c!==e.c.value||old.p!==e.p.value){
+  old.b=e.b.value;old.c=e.c.value;old.p=e.p.value;
+  e.pP.innerHTML=old.p;
+  try{e.bB.innerHTML=newton(eval("x=>"+old.b),eval("x=>"+old.c),0.0001,e.p.value)}catch(e){e.bB.innerHTML="Error"}
+ }
+});
 </script>
+<style>
+ *{
+  font-family: Calibri, serif;
+  color:white;
+  outline:none
+ }
+
+ body{background:#36393f;}
+
+ .container{position:absolute;left:50%;top:50%;translate:-50% -50%}
+ textarea{background:#94979d;border-radius:5px}
+ input,textarea{position:absolute;left:160px;resize:none}
+</style>

@@ -1,0 +1,49 @@
+<canvas style="position:absolute;left:0;top:0"></canvas>
+<script>
+const cnv=document.querySelector("canvas");
+//let p=[2];for(let i=3;i<1000;i+=2)if(!p.some(k=>i%k==0))p.push(i)
+let s=[0]
+for(let x=0;x<1000;x+=0.1)s.push(s[s.length-1]+(x**6)*(Math.E**(-x))*0.1);
+console.clear();
+const ct=cnv.getContext("2d")
+const fns=[];
+//fns.push(x=>s[x-1]);
+//fns.push(x=>20*Math.sin(x/10)+300)
+//fns.push(x=>x**2/50)
+//fns.push(x=>Math.log(x)*50)
+//fns.push(x=>p[x-1])
+let f=[]
+const dx=1;
+const dy=1
+const sx=3
+const sy=1
+const rdx= 1
+const render=()=>{
+cnv.width=innerWidth
+cnv.height=innerHeight
+f.push(Date.now())
+ct.fillStyle="#36393f"
+ct.fillRect(0,0,cnv.width,cnv.height)
+f=f.filter(i=>i+1000>Date.now())
+const fps=f.length
+ct.fillStyle="white"
+ct.textAlign="center"
+ct.fillText("FPS: "+fps,20,16)
+for(let x=0;x<innerWidth;x+=dx)ct.fillText(x+"",x*sx,cnv.height-16)
+for(let y=0;y<innerHeight;y+=dy)ct.fillText(y+"",16,cnv.height-y*sy)
+
+fns.forEach(fn=>{
+ct.beginPath()
+for(let x=0;x<innerWidth;x+=rdx){
+const y=fn(x)*sy
+if(!isNaN(y))ct[x?"lineTo":"moveTo"](x*sx,cnv.height-y)
+}
+ct.strokeStyle="white"
+ct.stroke()
+ct.closePath()
+})
+
+requestAnimationFrame(render)
+}
+render()
+</script>

@@ -1,0 +1,51 @@
+<script>
+function add1(a, b, sub=false){
+ c=[]
+ aL=a.length
+ bL=b.length
+ if(aL>bL)b="0".repeat(aL-bL)+b
+ if(bL>aL)a="0".repeat(bL-aL)+a
+ if(sub&&compare1(a,b)==-1)return "-"+add1(b,a,1)
+ for(i=a.length-1;i>=0;i--){k=(a[i]||0)*1+(b[i]||0)*(sub?-1:1);c[i]=k+(i!=a.length-1&&(c[i+1]>9||c[i+1]<0)&&k>0?(c[i+1]+=sub?10:-10,sub?-1:1):0)}
+ console.log(c)
+ while(c[0]==0)c.shift()
+ for(i=1;i<c.length;i++)if(c[i]<0)c[i]*=-1
+ return c.join("")
+}
+function compare1(a,b){
+ aL=a.length
+ bL=b.length
+ if(aL>bL)b="0".repeat(aL-bL)+b
+ if(bL>aL)a="0".repeat(bL-aL)+a
+ for(i=0;i<a.length;i++)if(a[0]*1>b[0]*1)return 1;else if(b[0]*1>a[0]*1)return -1;
+ return 0
+}
+function add2(a,b,sub=false){
+ aS=a.split(".")
+ bS=b.split(".")
+ if(!aS[1])aS[1]="0"
+ if(!bS[1])bS[1]="0"
+ if(aS[1].length>bS[1].length)bS[1]+="0".repeat(aS[1].length-bS[1].length)
+ if(bS[1].length>aS[1].length)aS[1]+="0".repeat(bS[1].length-aS[1].length)
+ t=add1(aS[0]+aS[1],bS[0]+bS[1],sub)
+ console.log(t)
+ n=t[0]=="-"
+ if(n)t=t.substring(1)
+ console.log(t)
+ p=t.substring(t.length-aS[1].length)
+ if([...p].every(i=>i=="0"))p=""
+ return t.substring(0,t.length-aS[1].length)+(p?"."+p:"")
+}
+console.log(add2("2.55","2.6", 1))
+</script>
+
+
+
+
+
+
+
+
+
+
+

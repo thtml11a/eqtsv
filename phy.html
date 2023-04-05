@@ -1,0 +1,122 @@
+<canvas></canvas>
+<style>body{margin:0}</style>
+<script>
+c=document.querySelector("canvas")
+t=c.getContext("2d")
+let {atan2,sin,cos,sqrt,ceil}=Math
+objects=[]
+tr=[0,0]
+sc=[1,1]
+g=9.801
+AirC=32
+KineticC=0.5
+area=10
+elas=(Cr,ma,mb,ua,ub,va,vb)=>(Cr*mb*(ub-ua)+ma*ua+mb*ub)/(ma+mb)
+objects.push(
+ {x:0,_y:()=>-c.height/2,w:1,_h:()=>c.height,static:true},
+ {_x:()=>c.width,_y:()=>-c.height/2,w:1,_h:()=>c.height,static:true},
+ {_x:()=>c.width/2,_y:()=>-c.height,_w:()=>c.width,h:1,static:true},
+ {x:100,y:-50,w:10,h:10,v:[0,0],mass:10}
+)
+render=()=>{
+ c.width=innerWidth
+ c.height=innerHeight
+ t.save()
+ t.translate(...tr)
+ t.scale(...sc)
+ objects.forEach(o=>{
+  t.fillRect(o.x-o.w/2,-o.y+o.h/2,o.w,-o.h)
+ })
+ t.restore()
+ requestAnimationFrame(render)
+}
+render()
+lU=Date.now()-1
+update=()=>{
+ dt=(Date.now()-lU)/1000
+ lU=Date.now()
+ objects.forEach(o=>{
+  if(o._x)o.x=o._x()
+  if(o._y)o.y=o._y()
+  if(o._w)o.w=o._w()
+  if(o._h)o.h=o._h()
+  if(!o.v)o.v=[0,0]
+  if(o.static)return
+  ka=KineticC*g*dt
+  n=o.v[0]>0
+  o.v[0]+=(n?-1:1)*ka
+  if((o.v[0]>0)!==n)o.v[0]=0
+  o.v[1]-=g*dt;
+  if(o.v[1]<0){
+   a=AirC*area*o.v[1]**2/o.mass*dt
+   o.v[1]+=a
+   if(o.v[1]>=0)o.v[1]=0
+  }
+  if(cl=move(o,o.v[0],0)[0]){
+   cl.v[0]+=o.v[0]
+   o.v[0]=0
+  }
+  if(cl=move(o,0,o.v[1])[1]){
+   cl.v[1]+=o.v[1]
+   o.v[1]=0
+  }
+ })
+ setTimeout(update)
+}
+collidesRect=(x1,y1,w1,h1,x2,y2,w2,h2)=>x1 < x2 + w2 &&
+    x1 + w1 > x2&&
+    y1 < y1 + h2 &&
+    h1 + y1 > y2;
+objCollides=(o1,o2)=>collidesRect(o1.x-o1.w/2,o1.y-o1.h/2,o1.w,o1.h,o2.x-o2.w/2,o2.y-o2.h/2,o2.w,o2.h)
+objCollidesAny=o=>objects.find(i=>i!==o&&objCollides(i,o))
+move=(o,dx,dy)=>{
+ ang=atan2(dx,dy)
+ vec=[sin(ang),cos(ang)]
+ dist=sqrt(dx**2+dy**2)
+ diff=1
+ cx=0
+ cy=0
+ cols=[]
+ for(i=0;i<ceil(dist/diff);i++){
+  if(!cx){
+   o.x+=vec[0]
+   if(cl=objCollidesAny(o))[o.x-=vec[0],cx=1,cols[0]=cl]
+  }
+  if(!cy){
+   o.y+=vec[1]
+   if(cl=objCollidesAny(o))[o.y-=vec[1],cy=1,cols[1]=cl]
+  }
+  if(cx&&cy)break
+ }
+ return cols
+}
+addEventListener("contextmenu",e=>e.preventDefault())
+addEventListener("touchstart",e=>tL=e.touches[0])
+addEventListener("touchmove",e=>{
+ to=e.touches[0]
+ tL&&(tr[0]+=to.pageX-tL.pageX)
+ tL&&(tr[1]+=to.pageY-tL.pageY)
+ tL=to
+})
+update()
+let moving=false
+addEventListener("dblclick",e=>{
+ moving=!moving
+ mx=e.pageX-tr[0]
+ my=-e.pageY+tr[1]
+ o=objects[3]
+ rad=atan2(o.x-mx,o.y-my)
+ o.v[0]-=sin(rad)
+ o.v[1]-=cos(rad)
+});
+</script>
+
+
+
+
+
+
+
+
+
+

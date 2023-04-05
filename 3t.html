@@ -1,0 +1,56 @@
+<canvas></canvas>
+<style>body{margin:0}</style>
+<script>
+canvas=document.querySelector("canvas")
+ctx=canvas.getContext("2d")
+const {tan,PI,abs}=Math
+translation=[0,0,0]
+f=PI/2
+c=1/tan(f/2)
+const xy=(x,y)=>f<=PI?abs(x)*c<=z:abs(x)*c>=z
+const xys=(x,y)=>x/y*c/2+.5
+objects=[]
+objects.push([
+ [100, 0, 0], [200, 0, 0], [100, 0, 100], [0, 0, 0]
+], [
+ [0, 100, 0], [100, 100, 100], [200, 100, 0], [100, 100, 0]
+], [
+ [0, 0, 0], [0, 100, 0]
+], [
+ [100, 0, 100], [100, 100, 100]
+], [
+ [200, 0, 0], [200, 100, 0]
+], [
+ [100, 0, 0], [100, 100, 0]
+])
+const render=()=>{
+ canvas.width=innerWidth
+ canvas.height=innerHeight
+ objects.forEach(o=>{
+  ctx.beginPath()
+  o.forEach((i,j)=>ctx[j?"lineTo":"moveTo"](i[0]+translation[0],i[1]+translation[1]))
+  ctx.stroke()
+  ctx.closePath()
+ })
+ requestAnimationFrame(render)
+}
+render()
+addEventListener("contextmenu",e=>e.preventDefault())
+lT=0
+addEventListener("touchmove",e=>{
+ t=e.touches[0]
+ if(lT){
+  translation[0]+=t.pageX-lT.pageX
+  translation[1]+=t.pageY-lT.pageY
+ }
+ lT=t
+})
+addEventListener("touchstart",e=>lT=e.touches[0])
+</script>
+
+
+
+
+
+
+

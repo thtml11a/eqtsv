@@ -1,9 +1,17 @@
-Equation: <textarea id="eq">x**3 - 5</textarea><br>
-Difference: <input value="0.0000001" type="number" id="dx"><br>
+Equation: <textarea id="eq">add(pow(x,2),1)</textarea><br>
+Difference: <input value="0.0000001" type="number" id="dxr"> + i<input value="0.0000001" type="number" id="dxi"><br>
+Number fix: <input value="5" type="number" id="nFix"><br>
 Respected variable: <input value="x" id="rs"><br>
-Initial Guess: <input type="number" value="0" id="n1"> + i<input type="number" value="0" id="n2"><br>
+Iterations: <input value="1" id="iter" type="number"><br>
+Initial Guess: <input type="number" value="0" id="n1"> + i<input type="number" value="2" id="n2"><br>
 Root: <textarea readonly id="rt"></textarea><br>
 <button onclick="start()">Start</button>
+<br><button onclick="iterate()">Iterate</button>
+<br><button onclick="for(i=0;i<10;i++)iterate(1,1)">Iterate x10</button>
+<br><button onclick="for(i=0;i<100;i++)iterate(1,1)">Iterate x100</button>
+<style>
+*{user-select:none}
+</style>
 <script>
 const ev=s=>{
  try{
@@ -15,9 +23,19 @@ const ev=s=>{
 </script>
 <script>
 const {sqrt,sin,cos,PI,atan,abs,E,log}=Math
-const nFix=(n,k=10000)=>Math.round(n*k)/k
-const diff = (f, a, dx=0.00001) => (f(a+dx)-f(a-dx))/(2*dx);
+const nFix=(n,k=10**document.querySelector("#nFix").value)=>Math.round(n*k)/k
+const diff = (f, a, dx=[0.0000001,0]) => {
+ const y2=f(add(a,dx))
+ const y1=f(a)
+ return div( sub( y2, y1 ) , dx, 1 );
+}
+const int=(f,a,b,dx=[0.00001,0.00001])=>{
+ r=[0,0]
+ for(i=a;i<b;i=add(i,dx))r=mul(add(r,f(i)),dx)
+ return r
+}
 const Arg=(x,y)=>{
+ if(!x&&!y)return 0
  if(x==0)return PI/2*(y>0?1:3)
  if(y==0)return PI*(x>0?0:1)
  const a =atan(abs(y/x))
@@ -29,35 +47,72 @@ const Arg=(x,y)=>{
   else return a//--
  }
 };
-const add=(a,b,c,d)=>[a+c,b+d]
-const sub=(a,b,c,d)=>[a-c,b-d]
-const mul=(a,b,c,d)=>[a*c-b*d,a*d+b*c]
-const div=(a,b,c,d)=>{
+const addInt=(a,b,c,d)=>[a+c,b+d]
+const subInt=(a,b,c,d)=>[a-c,b-d]
+const mulInt=(a,b,c,d)=>[a*c-b*d,a*d+b*c]
+const divInt=(a,b,c,d)=>{
  const mag=sqrt(a**2+b**2)/sqrt(c**2+d**2)
  const rad=Arg(a,b)-Arg(c,d)
  return [cos(rad)*mag,sin(rad)*mag]
 }
-const pow=(a,b,c,d)=>{
+const powInt=(a,b,c,d)=>{
+ if(!a&&!b)return [0,0]
  const r=sqrt(a**2+b**2)
  const alpha=Arg(a,b)
  const mag=r**c*E**(-d*alpha)
- const rad = c*alpha+d*log(r)
- return [cos(rad)*mag,sin(rad)*mag]
+ const beta= c*alpha+d*log(r)
+ return [cos(beta)*mag,sin(beta)*mag]
+}
+const _t=(a,b,f,k=0)=>{
+ a=typeof a=="number"?[a,0]:a
+ b=typeof b=="number"?[b,0]:b
+ r=f(...a,...b)
+ if(k)r=r.map(i=>nFix(i))
+ return r
+}
+const add=(a,b,f=0)=>_t(a,b,addInt,f)
+const sub=(a,b,f=0)=>_t(a,b,subInt,f)
+const mul=(a,b,f=0)=>_t(a,b,mulInt,f)
+const div=(a,b,f=0)=>_t(a,b,divInt,f)
+const pow=(a,b,f=0)=>_t(a,b,powInt,f)
+let lastRoot=null
+window.iterate=(upd=true,thr=false)=>{
+ const er=s=>{
+  alert(s)
+  if(thr)throw new Error(s)
+ }
+ if(!lastRoot){
+   const initial=[document.querySelector("#n1").value*1,document.querySelector("#n2").value*1]
+  if(isNaN(initial[0]))return er("Initial guess's real part should be a floating number.")
+  if(isNaN(initial[1]))return er("Initial guess's imaginary part should be a floating number.")
+  lastRoot=[initial[0],initial[1]]
+ }
+ const resp=document.querySelector("#rs").value
+ if(!resp||!isNaN(resp[0]*1))return er("Invalid variable.")
+ let eq = ev(resp+"=>"+document.querySelector("#eq").value)
+ if(eq instanceof Error)return er(eq.toString())
+ eq=eq.res
+ const dx=[document.querySelector("#dxr").value*1,document.querySelector("#dxi").value*1]
+ if(isNaN(dx[0]))return er("Difference has to be a floating number.")
+ if(isNaN(dx[1]))return er("Difference has to be a floating number.")
+ const iter=document.querySelector("#iter").value*1
+ if(isNaN(iter))return er("Iteration amount has to be a floating number.")
+ let fR=eq(lastRoot)
+ let dfR=diff(eq,lastRoot,dx)
+ let frac=div(fR,dfR)
+ if(frac.some(i=>abs(i)===Infinity))return er("Current initial variable converges.")
+ console.log(fR,dfR)
+ lastRoot=sub(lastRoot,frac,1)
+ if(upd)document.querySelector("#rt").value=[lastRoot[0]+"",lastRoot[1]+"i"].filter(i=>i[0]!=="0").join("+")||"0"
 }
 window.start=()=>{
- const resp=document.querySelector("#rs").value
- if(!resp||!isNaN(resp[0]*1))return alert("Invalid variable.")
- let eq = ev("x=>"+document.querySelector("#eq").value)
- if(eq instanceof Error)return alert(eq.toString())
- equation=equation.res
- const initial=[document.querySelector("#n1").value*1,document.querySelector("#n2").value*1]
- if(isNaN(initial[0]))return alert("Initial guess's real part should be a floating number.")
- if(isNaN(initial[1]))return alert("Initial guess's imaginary part should be a floating number.")
- const dx=document.querySelector("#dx").value*1
- if(isNaN(dx))return alert("Difference has to be a floating number.")
- let cX=[initial[0],initial[1]]
- let fr=
+ lastRoot=null
+ const iter=document.querySelector("#iter").value*1
+ if(isNaN(iter))return alert("Iteration amount has to be a floating number.")
+ for(let i=0;i<iter;i++)iterate(false)
+ document.querySelector("#rt").value=[lastRoot[0]+"",lastRoot[1]+"i"].filter(i=>i[0]!=="0").join("+")||"0"
 }
+ addEventListener("contextmenu",e=>e.preventDefault())
 </script>
 
 
